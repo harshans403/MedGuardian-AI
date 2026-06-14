@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 6
+names: ['Abrasion', 'Bruise', 'Burn', 'Cut', 'Injury-detection', 'scarring']
+
+roboflow:
+  workspace: bryans-workspace-rrftd
+  project: injury-detection-4vjih
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/bryans-workspace-rrftd/injury-detection-4vjih/dataset/2

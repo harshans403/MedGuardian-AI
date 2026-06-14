@@ -1,0 +1,6 @@
+symptom,disease,specialist,emergency
+chest pain shortness of breath sweating,Heart Attack,Cardiology,High
+headache nausea dizziness,Migraine,Neurology,Medium
+fever cough sore throat,Flu,General Medicine,Low
+joint pain swelling stiffness,Arthritis,Orthopedics,Low
+abdominal pain vomiting nausea,Gastritis,Gastroenterology,Medium

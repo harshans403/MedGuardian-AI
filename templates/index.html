@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>MedGuardian AI</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    background:#f4f7fc;
+    padding:30px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    margin-bottom:15px;
+}
+
+button{
+    padding:12px 20px;
+    background:#007bff;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+.result{
+    margin-top:25px;
+    padding:20px;
+    background:#f1f1f1;
+    border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏥 MedGuardian AI</h1>
+
+<form method="POST" enctype="multipart/form-data">
+
+<h2>Symptom Analysis</h2>
+
+<input
+type="text"
+name="symptoms"
+placeholder="Example: fever, headache">
+
+<h2>Medical Report Upload</h2>
+
+<input
+type="file"
+name="report"
+accept=".pdf">
+
+<h2>Accident Injury Detection</h2>
+
+<input
+type="file"
+name="accident_image"
+accept="image/*">
+
+<select name="injury_type">
+
+<option value="">Select Injury</option>
+
+<option value="Fracture">Fracture</option>
+
+<option value="Burn">Burn</option>
+
+<option value="Head Injury">Head Injury</option>
+
+<option value="Bleeding">Bleeding</option>
+
+</select>
+
+<button type="submit">
+Analyze
+</button>
+
+</form>
+
+{% if disease %}
+
+<div class="result">
+
+<h2>Medical Diagnosis</h2>
+
+<p><b>Disease:</b> {{ disease }}</p>
+
+<p><b>Specialist:</b> {{ specialist }}</p>
+
+<p><b>Hospital Department:</b> {{ hospital_department }}</p>
+
+<p><b>Recommended Hospital:</b> {{ recommended_hospital }}</p>
+
+<p><b>Emergency Level:</b> {{ emergency }}</p>
+
+<p><b>Advice:</b> {{ advice }}</p>
+
+</div>
+
+{% endif %}
+
+{% if report_text %}
+
+<div class="result">
+
+<h2>PDF Report Content</h2>
+
+<pre>{{ report_text }}</pre>
+
+</div>
+
+{% endif %}
+
+{% if injury %}
+
+<div class="result">
+
+<h2>Accident Analysis</h2>
+
+<p><b>Detected Injury:</b> {{ injury }}</p>
+
+<p><b>Recommended Hospital:</b> {{ injury_hospital }}</p>
+
+<p><b>Department:</b> {{ injury_department }}</p>
+
+<p><b>First Aid:</b> {{ first_aid }}</p>
+
+</div>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>

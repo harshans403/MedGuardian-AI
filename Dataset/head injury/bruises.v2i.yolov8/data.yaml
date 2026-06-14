@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['bruises']
+
+roboflow:
+  workspace: cheya
+  project: bruises-aa7o7
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/cheya/bruises-aa7o7/dataset/2
