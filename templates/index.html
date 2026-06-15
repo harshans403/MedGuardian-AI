@@ -7,39 +7,45 @@
 <style>
 
 body{
-    font-family:Arial;
-    background:#f4f7fc;
-    padding:30px;
+    font-family: Arial;
+    background: #f4f7fc;
+    padding: 30px;
 }
 
 .container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:30px;
-    border-radius:15px;
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
 }
 
 input, select{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    margin-bottom:15px;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    margin-bottom: 15px;
 }
 
 button{
-    padding:12px 20px;
-    background:#007bff;
-    color:white;
-    border:none;
-    cursor:pointer;
+    padding: 12px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 .result{
-    margin-top:25px;
-    padding:20px;
-    background:#f1f1f1;
-    border-radius:10px;
+    margin-top: 25px;
+    padding: 20px;
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+pre{
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 </style>
@@ -74,20 +80,6 @@ accept=".pdf">
 type="file"
 name="accident_image"
 accept="image/*">
-
-<select name="injury_type">
-
-<option value="">Select Injury</option>
-
-<option value="Fracture">Fracture</option>
-
-<option value="Burn">Burn</option>
-
-<option value="Head Injury">Head Injury</option>
-
-<option value="Bleeding">Bleeding</option>
-
-</select>
 
 <button type="submit">
 Analyze
@@ -137,7 +129,15 @@ Analyze
 
 <p><b>Detected Injury:</b> {{ injury }}</p>
 
-<p><b>Recommended Hospital:</b> {{ injury_hospital }}</p>
+{% if burn_grade %}
+<p><b>Burn Grade:</b> {{ burn_grade }}</p>
+{% endif %}
+
+{% if burn_confidence %}
+<p><b>Confidence:</b> {{ burn_confidence }}%</p>
+{% endif %}
+
+<p><b>Recommended Specialist:</b> {{ injury_specialist }}</p>
 
 <p><b>Department:</b> {{ injury_department }}</p>
 

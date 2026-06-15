@@ -85,27 +85,27 @@ hospital_data = {
 injury_data = {
 
     "Fracture": {
-        "hospital": "Orthopedic Trauma Center",
-        "department": "Emergency Orthopedics",
+        "specialist": "Orthopedic Surgeon",
+        "department": "Orthopedics",
         "first_aid": "Immobilize the injured limb and avoid movement."
     },
 
-    "Bleeding": {
-        "hospital": "Trauma Hospital",
-        "department": "Emergency Care",
-        "first_aid": "Apply firm pressure on the wound immediately."
+    "Burn": {
+        "specialist": "Plastic Surgeon",
+        "department": "Burn Care Unit",
+        "first_aid": "Cool the burn under running water for 20 minutes."
     },
 
     "Head Injury": {
-        "hospital": "Neuroscience Hospital",
-        "department": "Emergency Neurology",
+        "specialist": "Neurologist",
+        "department": "Neurology",
         "first_aid": "Keep the patient still and seek emergency help."
     },
 
-    "Burn": {
-        "hospital": "Burn Care Center",
-        "department": "Burn Unit",
-        "first_aid": "Cool the burn under running water for 20 minutes."
+    "Bleeding": {
+        "specialist": "Emergency Physician",
+        "department": "Emergency Medicine",
+        "first_aid": "Apply firm pressure on the wound immediately."
     }
 }
 
@@ -127,7 +127,7 @@ def home():
     report_text = ""
 
     injury = ""
-    injury_hospital = ""
+    injury_specialist = ""
     injury_department = ""
     first_aid = ""
 
@@ -288,8 +288,8 @@ def home():
 
             if injury in injury_data:
 
-                injury_hospital = \
-                    injury_data[injury]["hospital"]
+                injury_specialist = \
+                    injury_data[injury]["specialist"]
 
                 injury_department = \
                     injury_data[injury]["department"]
@@ -312,7 +312,7 @@ def home():
         report_text=report_text,
 
         injury=injury,
-        injury_hospital=injury_hospital,
+        injury_specialist=injury_specialist,
         injury_department=injury_department,
         first_aid=first_aid,
 
