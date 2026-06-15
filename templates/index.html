@@ -7,7 +7,7 @@
 <style>
 
 body{
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #f4f7fc;
     padding: 30px;
 }
@@ -18,13 +18,26 @@ body{
     background: white;
     padding: 30px;
     border-radius: 15px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
-input, select{
+h1{
+    text-align: center;
+    color: #007bff;
+}
+
+h2{
+    color: #333;
+}
+
+input{
     width: 100%;
     padding: 12px;
     margin-top: 10px;
     margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
 }
 
 button{
@@ -32,8 +45,12 @@ button{
     background: #007bff;
     color: white;
     border: none;
-    cursor: pointer;
     border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover{
+    background: #0056b3;
 }
 
 .result{
@@ -56,96 +73,63 @@ pre{
 
 <div class="container">
 
-<h1>🏥 MedGuardian AI</h1>
+    <h1>🏥 MedGuardian AI</h1>
 
-<form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data">
 
-<h2>Symptom Analysis</h2>
+        <h2>Symptom Analysis</h2>
 
-<input
-type="text"
-name="symptoms"
-placeholder="Example: fever, headache">
+        <input
+            type="text"
+            name="symptoms"
+            placeholder="Example: fever, headache, cough">
 
-<h2>Medical Report Upload</h2>
+        <h2>Medical Report Upload</h2>
 
-<input
-type="file"
-name="report"
-accept=".pdf">
+        <input
+            type="file"
+            name="report"
+            accept=".pdf">
 
-<h2>Accident Injury Detection</h2>
+        <button type="submit">
+            Analyze
+        </button>
 
-<input
-type="file"
-name="accident_image"
-accept="image/*">
+    </form>
 
-<button type="submit">
-Analyze
-</button>
+    {% if disease %}
 
-</form>
+    <div class="result">
 
-{% if disease %}
+        <h2>Medical Diagnosis Result</h2>
 
-<div class="result">
+        <p><b>Predicted Disease:</b> {{ disease }}</p>
 
-<h2>Medical Diagnosis</h2>
+        <p><b>Specialist:</b> {{ specialist }}</p>
 
-<p><b>Disease:</b> {{ disease }}</p>
+        <p><b>Hospital Department:</b> {{ hospital_department }}</p>
 
-<p><b>Specialist:</b> {{ specialist }}</p>
+        <p><b>Recommended Hospital:</b> {{ recommended_hospital }}</p>
 
-<p><b>Hospital Department:</b> {{ hospital_department }}</p>
+        <p><b>Emergency Level:</b> {{ emergency }}</p>
 
-<p><b>Recommended Hospital:</b> {{ recommended_hospital }}</p>
+        <p><b>Advice:</b> {{ advice }}</p>
 
-<p><b>Emergency Level:</b> {{ emergency }}</p>
+    </div>
 
-<p><b>Advice:</b> {{ advice }}</p>
+    {% endif %}
 
-</div>
+    {% if report_text %}
 
-{% endif %}
+    <div class="result">
 
-{% if report_text %}
+        <h2>Medical Report Content</h2>
 
-<div class="result">
+        <pre>{{ report_text }}</pre>
 
-<h2>PDF Report Content</h2>
+    </div>
 
-<pre>{{ report_text }}</pre>
-
-</div>
-
-{% endif %}
-
-{% if injury %}
-
-<div class="result">
-
-<h2>Accident Analysis</h2>
-
-<p><b>Detected Injury:</b> {{ injury }}</p>
-
-{% if burn_grade %}
-<p><b>Burn Grade:</b> {{ burn_grade }}</p>
-{% endif %}
-
-{% if burn_confidence %}
-<p><b>Confidence:</b> {{ burn_confidence }}%</p>
-{% endif %}
-
-<p><b>Recommended Specialist:</b> {{ injury_specialist }}</p>
-
-<p><b>Department:</b> {{ injury_department }}</p>
-
-<p><b>First Aid:</b> {{ first_aid }}</p>
-
-</div>
-
-{% endif %}
+    {% endif %}
 
 </div>
 

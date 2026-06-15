@@ -1,55 +1,41 @@
 from flask import Flask, render_template, request
-from ultralytics import YOLO
 import pandas as pd
 import joblib
 import pdfplumber
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# ==========================================
+# =====================================================
 # FOLDERS
-# ==========================================
+# =====================================================
 
 UPLOAD_FOLDER = "uploads"
-ACCIDENT_FOLDER = "accident_images"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(ACCIDENT_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["ACCIDENT_FOLDER"] = ACCIDENT_FOLDER
 
-# ==========================================
+# =====================================================
 # LOAD DISEASE MODEL
-# ==========================================
+# =====================================================
 
-model = joblib.load("models/diagnosis_model.pkl")
-data = pd.read_csv("symptom_data.csv")
+try:
+    model = joblib.load("models/diagnosis_model.pkl")
+except Exception as e:
+    print("Disease model error:", e)
+    model = None
 
-# ==========================================
-# LOAD AI MODELS
-# ==========================================
+try:
+    data = pd.read_csv("symptom_data.csv")
+except Exception as e:
+    print("CSV error:", e)
+    data = pd.DataFrame()
 
-fracture_model = YOLO(
-    "runs/detect/train/weights/best.pt"
-)
-
-head_model = YOLO(
-    "runs/detect/train-6/weights/best.pt"
-)
-
-bleeding_model = YOLO(
-    "runs/detect/train-7/weights/best.pt"
-)
-
-burn_model = YOLO(
-    "runs/classify/train-5/weights/best.pt"
-)
-
-# ==========================================
+# =====================================================
 # HOSPITAL DATABASE
-# ==========================================
+# =====================================================
 
 hospital_data = {
     "Cardiology": {
@@ -78,40 +64,9 @@ hospital_data = {
     }
 }
 
-# ==========================================
-# INJURY DATABASE
-# ==========================================
-
-injury_data = {
-
-    "Fracture": {
-        "specialist": "Orthopedic Surgeon",
-        "department": "Orthopedics",
-        "first_aid": "Immobilize the injured limb and avoid movement."
-    },
-
-    "Burn": {
-        "specialist": "Plastic Surgeon",
-        "department": "Burn Care Unit",
-        "first_aid": "Cool the burn under running water for 20 minutes."
-    },
-
-    "Head Injury": {
-        "specialist": "Neurologist",
-        "department": "Neurology",
-        "first_aid": "Keep the patient still and seek emergency help."
-    },
-
-    "Bleeding": {
-        "specialist": "Emergency Physician",
-        "department": "Emergency Medicine",
-        "first_aid": "Apply firm pressure on the wound immediately."
-    }
-}
-
-# ==========================================
-# HOME
-# ==========================================
+# =====================================================
+# HOME ROUTE
+# =====================================================
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -126,203 +81,114 @@ def home():
 
     report_text = ""
 
-    injury = ""
-    injury_specialist = ""
-    injury_department = ""
-    first_aid = ""
-
-    burn_grade = ""
-    burn_confidence = ""
-
     if request.method == "POST":
 
-        # ==================================
+        # =================================================
         # DISEASE PREDICTION
-        # ==================================
+        # =================================================
 
-        symptoms = request.form.get("symptoms", "")
+        symptoms = request.form.get("symptoms", "").strip()
 
-        if symptoms:
+        if symptoms and model is not None:
 
-            symptoms_processed = symptoms.lower()
+            try:
 
-            prediction = model.predict(
-                [symptoms_processed]
-            )
+                prediction = model.predict(
+                    [symptoms.lower()]
+                )
 
-            disease = prediction[0]
+                disease = prediction[0]
 
-            result = data[
-                data["disease"] == disease
-            ]
+                result = data[
+                    data["disease"] == disease
+                ]
 
-            if not result.empty:
+                if not result.empty:
 
-                specialist = result.iloc[0]["specialist"]
-                emergency = result.iloc[0]["emergency"]
+                    specialist = result.iloc[0]["specialist"]
+                    emergency = result.iloc[0]["emergency"]
 
-                if specialist in hospital_data:
+                    department = str(
+                        result.iloc[0].get(
+                            "department",
+                            "General Medicine"
+                        )
+                    )
 
-                    recommended_hospital = \
-                        hospital_data[specialist]["hospital"]
+                    if department in hospital_data:
 
-                    hospital_department = \
-                        hospital_data[specialist]["department"]
+                        recommended_hospital = (
+                            hospital_data[department]["hospital"]
+                        )
 
-            advice = "Consult a healthcare professional."
+                        hospital_department = (
+                            hospital_data[department]["department"]
+                        )
 
-        # ==================================
-        # PDF REPORT
-        # ==================================
+                advice = (
+                    "Consult a healthcare professional."
+                )
+
+            except Exception as e:
+
+                disease = f"Prediction Error: {e}"
+
+        # =================================================
+        # PDF REPORT ANALYSIS
+        # =================================================
 
         report = request.files.get("report")
 
         if report and report.filename:
 
+            filename = secure_filename(
+                report.filename
+            )
+
             pdf_path = os.path.join(
                 app.config["UPLOAD_FOLDER"],
-                report.filename
+                filename
             )
 
             report.save(pdf_path)
 
             try:
 
-                with pdfplumber.open(pdf_path) as pdf:
+                extracted_pages = []
 
-                    pages = []
+                with pdfplumber.open(pdf_path) as pdf:
 
                     for page in pdf.pages:
 
-                        txt = page.extract_text()
+                        text = page.extract_text()
 
-                        if txt:
-                            pages.append(txt)
+                        if text:
+                            extracted_pages.append(text)
 
-                    report_text = "\n".join(pages)
+                report_text = "\n".join(
+                    extracted_pages
+                )
 
             except Exception as e:
 
-                report_text = str(e)
-
-        # ==================================
-        # ACCIDENT IMAGE ANALYSIS
-        # ==================================
-
-        accident_image = request.files.get(
-            "accident_image"
-        )
-
-        if accident_image and accident_image.filename:
-
-            image_path = os.path.join(
-                app.config["ACCIDENT_FOLDER"],
-                accident_image.filename
-            )
-
-            accident_image.save(image_path)
-
-            # -------------------------
-            # FRACTURE
-            # -------------------------
-
-            fracture_results = fracture_model(
-                image_path
-            )
-
-            if len(fracture_results[0].boxes) > 0:
-
-                injury = "Fracture"
-
-            # -------------------------
-            # HEAD INJURY
-            # -------------------------
-
-            head_results = head_model(
-                image_path
-            )
-
-            if len(head_results[0].boxes) > 0:
-
-                injury = "Head Injury"
-
-            # -------------------------
-            # BLEEDING
-            # -------------------------
-
-            bleeding_results = bleeding_model(
-                image_path
-            )
-
-            if len(bleeding_results[0].boxes) > 0:
-
-                injury = "Bleeding"
-
-            # -------------------------
-            # BURN
-            # -------------------------
-
-            burn_results = burn_model(
-                image_path
-            )
-
-            if burn_results[0].probs is not None:
-
-                class_id = burn_results[0].probs.top1
-
-                burn_grade = \
-                    burn_results[0].names[class_id]
-
-                burn_confidence = round(
-                    float(
-                        burn_results[0].probs.top1conf
-                    ) * 100,
-                    2
+                report_text = (
+                    f"PDF Error: {str(e)}"
                 )
 
-                injury = "Burn"
-
-            # -------------------------
-            # FIRST AID
-            # -------------------------
-
-            if injury in injury_data:
-
-                injury_specialist = \
-                    injury_data[injury]["specialist"]
-
-                injury_department = \
-                    injury_data[injury]["department"]
-
-                first_aid = \
-                    injury_data[injury]["first_aid"]
-
     return render_template(
-
         "index.html",
-
         disease=disease,
         specialist=specialist,
         emergency=emergency,
         advice=advice,
-
         hospital_department=hospital_department,
         recommended_hospital=recommended_hospital,
-
-        report_text=report_text,
-
-        injury=injury,
-        injury_specialist=injury_specialist,
-        injury_department=injury_department,
-        first_aid=first_aid,
-
-        burn_grade=burn_grade,
-        burn_confidence=burn_confidence
+        report_text=report_text
     )
 
-# ==========================================
-# RUN
-# ==========================================
+# =====================================================
+# RUN APP
+# =====================================================
 
 if __name__ == "__main__":
 
@@ -333,5 +199,5 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=port,
-        debug=False
+        debug=True
     )
