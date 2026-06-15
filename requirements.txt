@@ -1,8 +1,6 @@
-flask
-ultralytics
-opencv-python
-numpy
+Flask
 pandas
 scikit-learn
 joblib
-pillow
+pdfplumber
+gunicorn
