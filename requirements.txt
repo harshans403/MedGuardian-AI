@@ -1,6 +1,9 @@
 Flask
 pandas
-scikit-learn
 joblib
 pdfplumber
+scikit-learn
 gunicorn
+pytesseract
+pdf2image
+Pillow
