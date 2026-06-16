@@ -2,8 +2,22 @@ from flask import Flask, render_template, request
 import pandas as pd
 import joblib
 import pdfplumber
+import pytesseract
+from pdf2image import convert_from_path
 import os
 from werkzeug.utils import secure_filename
+
+# =====================================================
+# TESSERACT OCR CONFIGURATION
+# =====================================================
+
+pytesseract.pytesseract.tesseract_cmd = (
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+)
+
+# =====================================================
+# FLASK APP
+# =====================================================
 
 app = Flask(__name__)
 
@@ -87,7 +101,10 @@ def home():
         # DISEASE PREDICTION
         # =================================================
 
-        symptoms = request.form.get("symptoms", "").strip()
+        symptoms = request.form.get(
+            "symptoms",
+            ""
+        ).strip()
 
         if symptoms and model is not None:
 
@@ -105,8 +122,13 @@ def home():
 
                 if not result.empty:
 
-                    specialist = result.iloc[0]["specialist"]
-                    emergency = result.iloc[0]["emergency"]
+                    specialist = result.iloc[0][
+                        "specialist"
+                    ]
+
+                    emergency = result.iloc[0][
+                        "emergency"
+                    ]
 
                     department = str(
                         result.iloc[0].get(
@@ -118,11 +140,15 @@ def home():
                     if department in hospital_data:
 
                         recommended_hospital = (
-                            hospital_data[department]["hospital"]
+                            hospital_data[
+                                department
+                            ]["hospital"]
                         )
 
                         hospital_department = (
-                            hospital_data[department]["department"]
+                            hospital_data[
+                                department
+                            ]["department"]
                         )
 
                 advice = (
@@ -131,7 +157,9 @@ def home():
 
             except Exception as e:
 
-                disease = f"Prediction Error: {e}"
+                disease = (
+                    f"Prediction Error: {e}"
+                )
 
         # =================================================
         # PDF REPORT ANALYSIS
@@ -152,27 +180,85 @@ def home():
 
             report.save(pdf_path)
 
+            print("PDF uploaded:", filename)
+            print("Saved to:", pdf_path)
+
             try:
 
                 extracted_pages = []
 
-                with pdfplumber.open(pdf_path) as pdf:
+                # -----------------------------------------
+                # First try normal text extraction
+                # -----------------------------------------
+
+                with pdfplumber.open(
+                    pdf_path
+                ) as pdf:
 
                     for page in pdf.pages:
 
-                        text = page.extract_text()
+                        text = (
+                            page.extract_text()
+                        )
 
                         if text:
-                            extracted_pages.append(text)
+                            extracted_pages.append(
+                                text
+                            )
 
                 report_text = "\n".join(
                     extracted_pages
                 )
 
+                # -----------------------------------------
+                # If no text found, use OCR
+                # -----------------------------------------
+
+                if not report_text.strip():
+
+                    print(
+                        "No text found. Running OCR..."
+                    )
+
+                    images = convert_from_path(
+                        pdf_path
+                    )
+
+                    ocr_text = []
+
+                    for image in images:
+
+                        text = (
+                            pytesseract
+                            .image_to_string(
+                                image
+                            )
+                        )
+
+                        if text:
+                            ocr_text.append(
+                                text
+                            )
+
+                    report_text = "\n".join(
+                        ocr_text
+                    )
+
+                    if not report_text.strip():
+
+                        report_text = (
+                            "No readable text found "
+                            "in the PDF. "
+                            "This report may be a "
+                            "scanned image."
+                        )
+
             except Exception as e:
 
+                print("PDF Error:", e)
+
                 report_text = (
-                    f"PDF Error: {str(e)}"
+                    f"Error reading PDF: {str(e)}"
                 )
 
     return render_template(
@@ -181,8 +267,10 @@ def home():
         specialist=specialist,
         emergency=emergency,
         advice=advice,
-        hospital_department=hospital_department,
-        recommended_hospital=recommended_hospital,
+        hospital_department=
+            hospital_department,
+        recommended_hospital=
+            recommended_hospital,
         report_text=report_text
     )
 
@@ -193,7 +281,10 @@ def home():
 if __name__ == "__main__":
 
     port = int(
-        os.environ.get("PORT", 5000)
+        os.environ.get(
+            "PORT",
+            5000
+        )
     )
 
     app.run(
