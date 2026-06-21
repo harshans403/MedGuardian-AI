@@ -4,6 +4,3 @@ scikit-learn
 joblib
 pdfplumber
 gunicorn
-pytesseract
-pdf2image
-Pillow
