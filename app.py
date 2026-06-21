@@ -16,7 +16,6 @@ app = Flask(__name__)
 # =====================================================
 
 UPLOAD_FOLDER = "uploads"
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -79,33 +78,25 @@ def home():
     specialist = ""
     emergency = ""
     advice = ""
-
     hospital_department = ""
     recommended_hospital = ""
-
     report_text = ""
 
     if request.method == "POST":
 
-        # ===============================================
+        # =================================================
         # SYMPTOM ANALYSIS
-        # ===============================================
+        # =================================================
 
         symptoms = request.form.get("symptoms", "").strip()
 
         if symptoms and model is not None:
 
             try:
-
-                prediction = model.predict(
-                    [symptoms.lower()]
-                )
-
+                prediction = model.predict([symptoms.lower()])
                 disease = prediction[0]
 
-                result = data[
-                    data["disease"] == disease
-                ]
+                result = data[data["disease"] == disease]
 
                 if not result.empty:
 
@@ -129,25 +120,20 @@ def home():
                             hospital_data[department]["department"]
                         )
 
-                advice = (
-                    "Consult a healthcare professional."
-                )
+                advice = "Consult a healthcare professional."
 
             except Exception as e:
-
                 disease = f"Prediction Error: {e}"
 
-        # ===============================================
+        # =================================================
         # PDF REPORT ANALYSIS
-        # ===============================================
+        # =================================================
 
         report = request.files.get("report")
 
         if report and report.filename:
 
-            filename = secure_filename(
-                report.filename
-            )
+            filename = secure_filename(report.filename)
 
             pdf_path = os.path.join(
                 app.config["UPLOAD_FOLDER"],
@@ -169,9 +155,7 @@ def home():
                         if text:
                             extracted_pages.append(text)
 
-                report_text = "\n".join(
-                    extracted_pages
-                )
+                report_text = "\n".join(extracted_pages)
 
                 if not report_text.strip():
 
@@ -203,9 +187,7 @@ def home():
 
 if __name__ == "__main__":
 
-    port = int(
-        os.environ.get("PORT", 5000)
-    )
+    port = int(os.environ.get("PORT", 5000))
 
     app.run(
         host="0.0.0.0",
